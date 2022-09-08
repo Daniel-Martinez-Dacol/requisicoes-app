@@ -1,39 +1,45 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/compat/firestore';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable } from 'rxjs';
-import { Departamento } from '../models/departamento.model';
+import firebase from 'firebase/compat/app';
 
 @Injectable({
   providedIn: 'root'
 })
-export class DepartamentoService {
-  private registros: AngularFirestoreCollection<Departamento>;
+export class AuthenticationService {
+  public usuarioLogado: Observable<firebase.User | null>
 
-  constructor(private firestore: AngularFirestore) {
-    this.registros =
-      this.firestore.collection<Departamento>("departamentos");
+  constructor(private auth: AngularFireAuth) {
+    this.usuarioLogado = auth.authState;
   }
 
-  public async inserir(registro: Departamento): Promise<any> {
-    if (!registro)
-      return Promise.reject("Item inválido");
-
-    const res = await this.registros.add(registro);
-
-    registro.id = res.id;
-
-    this.registros.doc(res.id).set(registro);
+  public cadastrar(email: string, senha: string): Promise<firebase.auth.UserCredential> {
+    return this.auth.createUserWithEmailAndPassword(email, senha);
   }
 
-  public editar(registro: Departamento): Promise<void> {
-    return this.registros.doc(registro.id).set(registro);
+  public login(email: string, senha: string): Promise<firebase.auth.UserCredential> {
+    return this.auth.signInWithEmailAndPassword(email, senha);
   }
 
-  public excluir(registro: Departamento): Promise<void> {
-    return this.registros.doc(registro.id).delete();
+  public logout(): Promise<void> {
+    return this.auth.signOut();
   }
 
-  public selecionarTodos(): Observable<Departamento[]> {
-    return this.registros.valueChanges();
+  public getUser(): Promise<firebase.User | null> {
+    console.log(this.auth.currentUser);
+    return this.auth.currentUser;
+  }
+
+  public updateUser(usuario: firebase.User | null) {
+    return this.auth.updateCurrentUser(usuario);
+  }
+
+  public getEmail() {
+    console.log(firebase.auth().currentUser?.email!)
+    return firebase.auth().currentUser?.email!;
+  }
+
+  public resetarSenha(email: string): Promise<void> {
+    return this.auth.sendPasswordResetEmail(email);
   }
 }

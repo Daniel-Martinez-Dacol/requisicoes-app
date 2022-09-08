@@ -2,27 +2,21 @@
   <div class="row">
     <div class="col-12 col-md-10 col-lg-9 mx-auto">
       <div class="text-center text-md-start">
-        <h1 class="fw-bold text-primary">Departamentos</h1>
+        <h1 class="fw-bold text-bg-dark">Departamentos</h1>
       </div>
 
-      <div class="d-grid gap-2 d-md-block mt-4">
-        <button
-          (click)="gravar(modal)"
-          type="button"
-          class="btn btn-primary me-md-1 col-md-2">
-          <i class="pi pi-user-plus me-2"></i>Novo
+      <div class="d-grid gap-2 d-md-block mt-3">
+        <button class="btn btn-primary me-md-1 col-md-2" type="button" (click)="gravar(modal)">
+          <i class="pi pi-plus me-2"></i>
+          Novo
         </button>
-        <button
-          role="button"
-          class="btn btn-outline-primary col-md-2"
-          routerLink="/painel">
-          <i class="pi pi-sign-out me-2"></i>Voltar
-        </button>
+        <a class="btn btn-outline-primary col-md-2 ms-lg-2" role="button" routerLink="/painel">
+          <i class="pi pi-sign-out me-2"></i> Voltar</a>
       </div>
 
-      <div class="mt-4">
-        <table class="table table-light table-striped table-hover">
-          <thead class="thead-dark text-center">
+      <div class="mt-5">
+        <table class="table table-dark table-striped table-hover">
+          <thead class="thead-light text-center">
             <tr>
               <th>Nome</th>
               <th>Telefone</th>
@@ -32,58 +26,54 @@
           <tbody class="text-center">
             <tr *ngFor="let departamento of (departamentos$ | async)">
               <td>{{ departamento.nome }}</td>
-              <td>{{ departamento.telefone }}</td>
+              <td>{{ departamento.telefone | phone }}</td>
               <td class="d-grid d-md-block">
-                <button
-                  (click)="gravar(modal, departamento)"
-                  type="button"
-                  class="btn btn-primary me-0 me-md-1 mb-1 mb-md-auto">
-                  <i class="pi pi-user-edit"></i>
-                </button>
-                <button
-                  (click)="excluir(departamento)"
-                  type="button"
-                  class="btn btn-outline-danger">
-                  <i class="pi pi-trash"></i>
-                </button>
+                <button class="btn btn-primary me-0 me-md-1 mb-1 mb-md-auto" type="button"><i class="pi pi-pencil"
+                    (click)="gravar(modal, departamento)"></i></button>
+                <button class="btn btn-outline-danger" type="button"><i class="pi pi-trash"
+                    (click)="excluir(departamento)"></i></button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-
   </div>
 </div>
 
 <ng-template #modal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">{{ tituloModal }} de Departamento</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('fechar')"></button>
-  </div>
-  <form [formGroup]="form" (ngSubmit)="modal.close('gravar')">
+  <div class="bg-medium text-bg-dark">
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title"> {{ tituloModal }} de Departamento</h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('fechar')"></button>
+    </div>
     <div class="modal-body">
-      <div class="form-group mb-3">
-        <label for="nome" class="form-label">Nome do Departamento</label>
-        <input formControlName="nome"
-          class="form-control"
-          type="text"
-          placeholder="Digite o nome do departamento">
-      </div>
-
-      <div class="form-group mb-3">
-        <label for="telefone" class="form-label">Telefone</label>
-        <input formControlName="telefone"
-          class="form-control"
-          type="text"
-          placeholder="Digite o número de telefone do departamento">
-      </div>
-
+      <form [formGroup]="form" (ngSubmit)="modal.close('gravar')">
+        <div class="form-group position-relative mb-3">
+          <label class="form-label" for="nome">Nome</label>
+          <input class="form-control bg-dark text-bg-dark" type="text" formControlName="nome"
+            placeholder="Ex.: Administração..." [ngClass]="(nome?.touched && nome?.invalid) ? 'is-invalid' : ''">
+          <div class="invalid-tooltip" *ngIf="nome?.touched && nome?.invalid">
+            <span *ngIf="nome?.errors?.['required']">É necessário um nome.</span>
+            <span *ngIf="nome?.errors?.['minlength']">Mínimo de 5 caracteres.</span>
+          </div>
+        </div>
+        <div class="form-group  position-relative mb-3">
+          <label class="form-label" for="telefone">Telefone</label>
+          <input class="form-control bg-dark text-bg-dark" type="text" formControlName="telefone"
+            mask="(00)0000-0000||(00)00000-0000" placeholder="(00)X0000-0000"
+            [ngClass]="(telefone?.touched && telefone?.invalid) ? 'is-invalid' : ''">
+          <div class="invalid-tooltip" *ngIf="nome?.touched && nome?.invalid">
+            <span *ngIf="telefone?.errors?.['required']">É necessário um telefone.</span>
+            <span *ngIf="telefone?.errors?.['minlength']">Mínimo de 10 caracteres.</span>
+          </div>
+        </div>
+        <div class=" modal-footer">
+          <button class="btn btn-outline-warning col-md-3" type="button"
+            (click)="modal.dismiss('fechar')">Cancelar</button>
+          <button class="btn btn-primary col-md-3" type="submit" [disabled]="this.form.invalid">Gravar</button>
+        </div>
+      </form>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-primary col-md-3" (click)="modal.dismiss('fechar')">
-        Cancelar</button>
-      <button type="submit" class="btn btn-primary col-md-3">Gravar</button>
-    </div>
-  </form>
+  </div>
 </ng-template>

@@ -1,0 +1,123 @@
+funcionario.component.html
+<div class="container">
+  <div class="row">
+    <div class="col-12 col-md-10 col-lg-9 mx-auto">
+      <div class="text-center text-md-start">
+        <h1 class="fw-bold text-bg-dark">Funcionários</h1>
+      </div>
+
+      <div class="d-grid gap-2 d-md-block mt-3">
+        <button class="btn btn-primary me-md-1 col-md-2" type="button" (click)="gravar(modal)">
+          <i class="pi pi-plus me-2"></i>
+          Novo
+        </button>
+        <a class="btn btn-outline-primary col-md-2 ms-lg-2" role="button" routerLink="/painel">
+          <i class="pi pi-sign-out me-2"></i> Voltar</a>
+      </div>
+
+      <div class="mt-5">
+        <table class="table table-dark table-striped table-hover">
+          <thead class="thead-light text-center">
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Função</th>
+              <th>Departamento</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <tr *ngFor="let funcionario of (funcionarios$ | async)">
+              <td>{{ funcionario.nome }}</td>
+              <td>{{ funcionario.email }}</td>
+              <td>{{ funcionario.funcao }}</td>
+              <td>{{ funcionario.departamento?.nome }}</td>
+              <td class="d-grid d-md-block">
+                <button class="btn btn-primary me-0 me-md-1 mb-1 mb-md-auto" type="button"><i class="pi pi-pencil"
+                    (click)="gravar(modal, funcionario)"></i></button>
+                <button class="btn btn-outline-danger" type="button"><i class="pi pi-trash"
+                    (click)="excluir(funcionario)"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #modal let-modal>
+  <div class="bg-medium text-bg-dark">
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title"> {{ tituloModal }} de Funcionário</h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('fechar')"></button>
+    </div>
+
+
+    <form [formGroup]="form" (ngSubmit)="modal.close('gravar')">
+      <div class="modal-body">
+
+        <div formGroupName="funcionario">
+          <div class="form-group position-relative mb-3">
+            <label class="form-label" for="nome">Nome</label>
+            <input class="form-control bg-dark text-bg-dark" type="text" formControlName="nome"
+              placeholder="Ex.: John Doe..." [ngClass]="(nome?.touched && nome?.invalid) ? 'is-invalid' : ''">
+            <div class="invalid-tooltip" *ngIf="nome?.touched && nome?.invalid">
+              <span *ngIf="nome?.errors?.['required']">É necessário 1 nome.</span>
+              <span *ngIf="nome?.errors?.['minlength']">Mínimo de 3 caracteres.</span>
+            </div>
+          </div>
+          <div class="form-group position-relative mb-3">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control bg-dark text-bg-dark" type="email" formControlName="email"
+              placeholder="Ex.: nome@exemplo.com..." [ngClass]="(email?.touched && email?.invalid) ? 'is-invalid' : ''">
+            <div class="invalid-tooltip" *ngIf="email?.touched && email?.invalid">
+              <span *ngIf="email?.errors?.['required']">É necessário 1 e-mail.</span>
+              <span *ngIf="email?.errors?.['email']">Formato de e-mail inválido.</span>
+            </div>
+          </div>
+          <div class="form-group position-relative mb-3">
+            <label class="form-label" for="funcao">Função</label>
+            <input class="form-control bg-dark text-bg-dark" type="text" formControlName="funcao"
+              placeholder="Ex.: Desenvolvedor..." [ngClass]="(funcao?.touched && funcao?.invalid) ? 'is-invalid' : ''">
+            <div class="invalid-tooltip" *ngIf="funcao?.touched && funcao?.invalid">
+              <span *ngIf="funcao?.errors?.['required']">É preciso 1 função.</span>
+              <span *ngIf="funcao?.errors?.['minlength']">No mínimo de 3 caracteres.</span>
+            </div>
+          </div>
+          <div class="form-group position-relative mb-3">
+            <label class="form-label" for="departamentoId">Departamento</label>
+            <ng-select class="custom" formControlName="departamentoId" [clearable]="false" [searchable]="false"
+              placeholder="Selecione um departamento!"
+              [ngClass]="(departamentoId?.touched && departamentoId?.invalid) ? 'is-invalid' : ''">
+              <ng-option class="custom" *ngFor="let departamento of ( departamentos$ | async )"
+                [value]="departamento.id">
+                {{ departamento.nome }}
+              </ng-option>
+            </ng-select>
+            <div class="invalid-tooltip" *ngIf="departamentoId?.touched && departamentoId?.invalid">
+              <span *ngIf="departamentoId?.errors?.['required']">É necessário um departamento.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group mb-3" *ngIf="!this.id?.value">
+          <label class="form-label" for="senha">Senha</label>
+          <input class="form-control bg-dark text-bg-dark" type="password" formControlName="senha"
+            placeholder="••••••••••" [ngClass]="(senha?.touched && senha?.invalid) ? 'is-invalid' : ''">
+          <div class="invalid-tooltip" *ngIf="senha?.touched && senha?.invalid">
+            <span *ngIf="senha?.errors?.['required']">É necessário uma senha.</span>
+            <span *ngIf="senha?.errors?.['minlength']">Mínimo de 10 caracteres.</span>
+          </div>
+        </div>
+
+        <div class=" modal-footer">
+          <button class="btn btn-outline-warning col-md-3" type="button"
+            (click)="modal.dismiss('fechar')">Cancelar</button>
+          <button class="btn btn-primary col-md-3" type="submit" [disabled]="this.form.invalid">Gravar</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</ng-template>

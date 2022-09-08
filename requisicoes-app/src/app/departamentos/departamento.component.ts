@@ -1,6 +1,7 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 import { Departamento } from './models/departamento.model';
 import { DepartamentoService } from './services/departamento.service';
@@ -15,8 +16,9 @@ export class DepartamentoComponent implements OnInit {
 
   constructor(
     private departamentoService: DepartamentoService,
+    private fb: FormBuilder,
     private modalService: NgbModal,
-    private fb: FormBuilder
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -24,49 +26,53 @@ export class DepartamentoComponent implements OnInit {
 
     this.form = this.fb.group({
       id: new FormControl(""),
-      nome: new FormControl(""),
-      telefone: new FormControl("")
-    })
+      nome: new FormControl("", [Validators.required, Validators.minLength(5)]),
+      telefone: new FormControl("", [Validators.required, Validators.minLength(10)])
+    });
   }
 
   get tituloModal(): string {
-    return this.id?.value ? "Atualização" : "Cadastro";
+    return this.id?.value ? "Edição" : "Cadastro";
   }
 
-  get id() {
+  get id(): AbstractControl | null {
     return this.form.get("id");
   }
 
-  get nome() {
+  get nome(): AbstractControl | null {
     return this.form.get("nome");
   }
 
-  get telefone() {
+  get telefone(): AbstractControl | null {
     return this.form.get("telefone");
   }
 
   public async gravar(modal: TemplateRef<any>, departamento?: Departamento) {
     this.form.reset();
 
-    if (departamento)
+    if(departamento)
       this.form.setValue(departamento);
 
     try {
       await this.modalService.open(modal).result;
 
-      if (!departamento)
-        await this.departamentoService.inserir(this.form.value)
-      else
-        await this.departamentoService.editar(this.form.value);
+      if(this.form.dirty && this.form.valid) {
+        if(!departamento)
+          await this.departamentoService.inserir(this.form.value);
+        else
+          await this.departamentoService.editar(this.form.value);
 
-      console.log(`O departamento foi salvo com sucesso`);
-    } catch (_error) {
+        this.toastr.success("Informações registradas com sucesso!", `${this.tituloModal} de departamento`);
+      }
+
+    } catch (error) {
+      if(error != "fechar" && error != "1" && error != "0")
+        this.toastr.error("Houve um erro na solicitação");
     }
-
   }
 
   public excluir(departamento: Departamento) {
     this.departamentoService.excluir(departamento);
+    this.toastr.warning(`'${departamento.nome}' excluído`, "Exclusão de departamento");
   }
-
 }
